@@ -15,6 +15,8 @@
 
 #define GET_HASH_TIME(dict, hash, output) getHashTime(dict, hash, output, #hash)
 
+#define REPORTS_DIR "reports/"
+
 /** @brief Prints stats in CSV format.
  *
  *  @param dict Test dictionary.
@@ -26,5 +28,6 @@
 bool getHashStats(Dict dict, size_t bucketCount, Hash* hash, const char* name);
 
 void getHashTime(Dict dict, Hash* hash, FILE* output, const char* name);
+bool benchmarkLookup(Dict dict, const char* reportName);
 
 #endif  // HASHMAP_BENCHMARK_H_

@@ -8,10 +8,13 @@
 
 #include "benchmark.h"
 
-#define HASH_STATS_MEASURE
-#define HASH_TIME_MEASURE
+// #define HASH_STATS_MEASURE
+// #define HASH_TIME_MEASURE
+#define LOOKUP_PERF_TEST
 
 #define HASH_TIME_FILE "hashtime.csv"
+
+#define VERSION "v1"
 
 static const char DictFile[] = "data/dictionary.txt";
 
@@ -68,6 +71,10 @@ int main() {
 
 #if (defined(HASH_TIME_MEASURE))
     getAllTime(dict);
+#endif
+
+#if (defined(LOOKUP_PERF_TEST))
+    benchmarkLookup(dict, REPORTS_DIR VERSION ".json");
 #endif
 
     dict.destroy();

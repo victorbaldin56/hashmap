@@ -13,14 +13,18 @@
 #define GET_HASH_STATS(dict, hash)                                             \
     getHashStats(dict, defaults::UpperBucketCount, hash, STATS_DIR #hash ".csv")
 
+#define GET_HASH_TIME(dict, hash, output) getHashTime(dict, hash, output, #hash)
+
 /** @brief Prints stats in CSV format.
  *
  *  @param dict Test dictionary.
  *  @param hash Pointer to tested hash function.
- *  @param name File name to open.
+ *  @param name Filename to open.
  *
  *  @return `false` in case of any failure.
  */
 bool getHashStats(Dict dict, size_t bucketCount, Hash* hash, const char* name);
+
+void getHashTime(Dict dict, Hash* hash, FILE* output, const char* name);
 
 #endif  // HASHMAP_BENCHMARK_H_

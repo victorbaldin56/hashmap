@@ -20,6 +20,9 @@ Hash sum;
 Hash ror;
 Hash rol;
 Hash crc32;
+Hash gnu;
+
+Hash crc32_sse;
 
 }  // namespace hash
 

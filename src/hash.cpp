@@ -61,3 +61,13 @@ uint64_t hash::crc32(const char key[]) {
 
     return ~crc;
 }
+
+uint64_t hash::gnu(const char key[]) {
+    uint64_t hash = 5381;
+
+    for (; *key; ++key) {
+        hash = ((hash << 5) + hash) + (unsigned char)*key;
+    }
+
+    return hash;
+}

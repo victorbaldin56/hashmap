@@ -27,6 +27,9 @@ class Dict {
     bool loadFromFile(const char* filename);
     bool toHashMap(HashMap* map);
 
+    size_t capacity() { return capacity_; }
+    char* operator[](size_t i) { return keys_[i]; }
+
     void destroy() {
         munmap(buf_.data, buf_.size);
         free(keys_);

@@ -7,7 +7,10 @@
 #include "benchmark.h"
 
 #include <errno.h>
+#include <limits.h>
 #include <stdio.h>
+
+#include <immintrin.h>
 
 bool getHashStats(Dict dict, size_t bucketCount, Hash* hash, const char* name) {
     assert(hash);
@@ -37,4 +40,24 @@ bool getHashStats(Dict dict, size_t bucketCount, Hash* hash, const char* name) {
 cleanup:
     map.destroy();
     return ret;
+}
+
+void getHashTime(Dict dict, Hash* hash, FILE* output, const char* name) {
+    assert(hash);
+    assert(fileno(output) > 0);
+
+    fprintf(output, "%s", name);
+
+    for (unsigned k = 0; k < defaults::NumHashMeasures; ++k) {
+        uint64_t begin = __rdtsc();
+        for (unsigned j = 0; j < defaults::NumHashRepeats; ++j) {
+            for (size_t i = 0; i < dict.capacity(); ++i) {
+                (*hash)(dict[i]);
+            }
+        }
+        uint64_t end = __rdtsc();
+        fprintf(output, ",%zu", end - begin);
+    }
+
+    fprintf(output, "\n");
 }

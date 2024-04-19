@@ -7,34 +7,24 @@
 #include "benchmark.h"
 
 #include <errno.h>
-#include <limits.h>
-#include <math.h>
 #include <stdio.h>
 
-#include <immintrin.h>
+#include <chrono>
 
-inline uint64_t square(uint64_t x) {
-    return x * x;
-}
+#include "stats.h"
 
 bool getHashStats(Dict dict, size_t bucketCount, Hash* hash, const char* name) {
     assert(hash);
 
-    HashMap map;
-    if (!map.create(bucketCount, hash)) {
-        fprintf(stderr, "Hash map allocation failed\n");
-        return false;
-    }
-
-    dict.toHashMap(&map);
-    bool ret = true;
-
     FILE* output = fopen(name, "w");
     if (!output) {
         fprintf(stderr, "Failed to open file %s: %s\n", name, strerror(errno));
-        ret = false;
-        goto cleanup;
+        return false;
     }
+
+    HashMap map;
+    map.create(bucketCount, hash);
+    dict.toHashMap(&map);
 
     fprintf(output, "num,load\n");
     for (size_t i = 0; i < map.bucketCount(); ++i)
@@ -42,83 +32,76 @@ bool getHashStats(Dict dict, size_t bucketCount, Hash* hash, const char* name) {
 
     fclose(output);
 
-cleanup:
     map.destroy();
-    return ret;
+    return true;
 }
 
-void getHashTime(Dict dict, Hash* hash, FILE* output, const char* name) {
+bool benchmarkHash(Dict dict, Hash* hash, const char* name) {
     assert(hash);
-    assert(fileno(output) > 0);
 
-    fprintf(output, "%s", name);
-
-    for (unsigned k = 0; k < defaults::NumHashMeasures; ++k) {
-        uint64_t begin = __rdtsc();
-        for (unsigned j = 0; j < defaults::NumHashRepeats; ++j) {
-            for (size_t i = 0; i < dict.capacity(); ++i) {
-                (*hash)(dict[i]);
-            }
-        }
-        uint64_t end = __rdtsc();
-        fprintf(output, ",%zu", end - begin);
-    }
-
-    fprintf(output, "\n");
-}
-
-bool benchmarkLookup(Dict dict, const char* reportName) {
-    assert(reportName);
-
-    FILE* output = fopen(reportName, "w");
+    FILE* output = fopen(name, "w");
     if (!output) {
-        fprintf(stderr, "Failed to open file %s: %s\n", reportName,
-                strerror(errno));
+        fprintf(stderr, "Failed to open file %s: %s\n", name, strerror(errno));
         return false;
     }
 
-    fprintf(output, "{\"elapsed_times\": [\n");
+    fprintf(output, "time\n");
+
+    for (unsigned i = 0; i < defaults::NumHashRepeats; ++i) {
+        auto begin = std::chrono::high_resolution_clock::now();
+        for (size_t j = 0; j < dict.capacity(); ++j) {
+            (*hash)(dict[j]);
+        }
+        auto end = std::chrono::high_resolution_clock::now();
+
+        fprintf(
+            output, "%ld\n",
+            std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin)
+                .count());
+    }
+
+    fclose(output);
+    return true;
+}
+
+bool benchmarkLookup(Dict dict, const char* name) {
+    FILE* output = fopen(name, "w");
+    if (!output) {
+        fprintf(stderr, "Failed to open file %s: %s\n", name, strerror(errno));
+        return false;
+    }
+
+    fprintf(output, "{\"time\": [\n");
 
     HashMap map;
     map.create(defaults::UpperBucketCount, hash::crc32);
 
     dict.toHashMap(&map);
 
-    uint64_t mean = 0;
-    uint64_t dev = 0;
-    uint64_t times[defaults::NumLookupMeasures] = {};
+    long times[defaults::NumLookupRepeats] = {};
 
-    for (unsigned k = 0; k < defaults::NumLookupMeasures; ++k) {
-        uint64_t begin = __rdtsc();
-        for (unsigned j = 0; j < defaults::NumLookupRepeats; ++j) {
-            for (size_t i = 0; i < dict.capacity(); ++i) {
-                map.find(dict[i]);
-            }
+    for (unsigned j = 0; j < defaults::NumLookupRepeats; ++j) {
+        auto begin = std::chrono::high_resolution_clock::now();
+        for (size_t i = 0; i < dict.capacity(); ++i) {
+            map.find(dict[i]);
         }
-        uint64_t end = __rdtsc();
-        times[k] = end - begin;
-        mean += times[k];
-
-        if (k < defaults::NumLookupMeasures - 1)
-            fprintf(output, "%zu,\n", times[k]);
+        auto end = std::chrono::high_resolution_clock::now();
+        long nsec =
+            std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin)
+                .count();
+        times[j] = nsec;
+        if (j < defaults::NumLookupRepeats - 1)
+            fprintf(output, "%ld,\n", nsec);
         else
-            fprintf(output, "%zu\n", times[k]);
+            fprintf(output, "%ld],\n", nsec);
     }
-
-    mean /= defaults::NumLookupMeasures;
-
-    for (unsigned i = 0; i < defaults::NumLookupMeasures; ++i) {
-        dev += square(times[i] - mean);
-    }
-
-    dev /= defaults::NumLookupMeasures;
-    dev = (uint64_t)sqrt(dev);
 
     fprintf(output,
-            "],\n"
-            "\"mean_time\": %zu,\n"
-            "\"stdev\": %zu}",
-            mean, dev);
+            "\"avg\": %ld,\n"
+            "\"stddev\": %ld}",
+            stats::mean(times, defaults::NumLookupRepeats),
+            stats::stddev(times, defaults::NumLookupRepeats));
 
+    fclose(output);
     return true;
 }

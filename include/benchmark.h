@@ -9,13 +9,13 @@
 
 #include "dictloader.h"
 
-#define STATS_DIR "stats/"
+#define LOOKUP_STATS_DIR "stats/lookup/"
+#define STATS_DIR "stats/hash/"
 #define GET_HASH_STATS(dict, hash)                                             \
     getHashStats(dict, defaults::UpperBucketCount, hash, STATS_DIR #hash ".csv")
 
-#define GET_HASH_TIME(dict, hash, output) getHashTime(dict, hash, output, #hash)
-
-#define REPORTS_DIR "reports/"
+#define BENCHMARK_HASH(dict, hash)                                             \
+    benchmarkHash(dict, hash, STATS_DIR #hash "_time.csv")
 
 /** @brief Prints stats in CSV format.
  *
@@ -27,7 +27,7 @@
  */
 bool getHashStats(Dict dict, size_t bucketCount, Hash* hash, const char* name);
 
-void getHashTime(Dict dict, Hash* hash, FILE* output, const char* name);
-bool benchmarkLookup(Dict dict, const char* reportName);
+bool benchmarkHash(Dict dict, Hash* hash, const char* name);
+bool benchmarkLookup(Dict dict, const char* name);
 
 #endif  // HASHMAP_BENCHMARK_H_

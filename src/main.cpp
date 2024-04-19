@@ -12,9 +12,9 @@
 // #define HASH_TIME_MEASURE
 #define LOOKUP_PERF_TEST
 
-#define HASH_TIME_FILE "hashtime.csv"
-
 #define VERSION "v1"
+
+#define ARRAY_SIZE(a) sizeof(a) / sizeof(a[0])
 
 static const char DictFile[] = "data/dictionary.txt";
 
@@ -33,31 +33,11 @@ inline void getAllStats(Dict dict) {
                  STATS_DIR "hash::sum(lower size).csv");
 }
 
-inline bool getAllTime(Dict dict) {
-    FILE* output = fopen("stats/hashtime.csv", "w");
-    if (!output) {
-        fprintf(stderr, "Failed to open file %s: %s\n", HASH_TIME_FILE,
-                strerror(errno));
-        return false;
-    }
-
-    fprintf(output, "Measure");
-    for (size_t i = 1; i <= defaults::NumHashMeasures; ++i) {
-        fprintf(output, ",%zu", i);
-    }
-    fprintf(output, "\n");
-
-    GET_HASH_TIME(dict, hash::zero, output);
-    GET_HASH_TIME(dict, hash::firstChar, output);
-    GET_HASH_TIME(dict, hash::strlen, output);
-    GET_HASH_TIME(dict, hash::sum, output);
-    GET_HASH_TIME(dict, hash::ror, output);
-    GET_HASH_TIME(dict, hash::rol, output);
-    GET_HASH_TIME(dict, hash::crc32, output);
-    GET_HASH_TIME(dict, hash::gnu, output);
-
-    fclose(output);
-    return true;
+inline void benchmarkAllHash(Dict dict) {
+    BENCHMARK_HASH(dict, hash::ror);
+    BENCHMARK_HASH(dict, hash::rol);
+    BENCHMARK_HASH(dict, hash::crc32);
+    BENCHMARK_HASH(dict, hash::gnu);
 }
 
 int main() {
@@ -70,11 +50,11 @@ int main() {
 #endif
 
 #if (defined(HASH_TIME_MEASURE))
-    getAllTime(dict);
+    benchmarkAllHash(dict);
 #endif
 
 #if (defined(LOOKUP_PERF_TEST))
-    benchmarkLookup(dict, REPORTS_DIR VERSION ".json");
+    benchmarkLookup(dict, LOOKUP_STATS_DIR VERSION ".json");
 #endif
 
     dict.destroy();

@@ -16,6 +16,7 @@ add_executable(
     src/hash.cpp
     src/main.cpp
     src/dictloader.cpp
+    src/stats.cpp
 )
 
 include_directories(${PROJECT_SOURCE_DIR}/include)

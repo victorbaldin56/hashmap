@@ -69,7 +69,7 @@ bool Dict::toHashMap(HashMap* map) {
         DEBUG_LOG("%s: ", keys_[i]);
 
         HashMap::InsertResult res = map->insert(keys_[i], 1);
-        if (!res.is_inserted) {
+        if (!res.isInserted) {
             if (!res.valptr) {
                 fprintf(stderr, "Failed to allocate node in bucket\n");
                 return false;

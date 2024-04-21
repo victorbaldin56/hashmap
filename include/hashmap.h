@@ -62,7 +62,7 @@ class HashMap {
 
    public:
     struct InsertResult {
-        bool is_inserted;
+        bool isInserted;
         Value* valptr;
     };
 

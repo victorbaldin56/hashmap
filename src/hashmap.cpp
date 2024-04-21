@@ -15,8 +15,15 @@ bool HashMap::create(size_t bucketCount, Hash* hash) {
     if (!buckets_)
         return false;
 
-    for (size_t i = 0; i < bucketCount; ++i)
-        buckets_[i].create();
+    for (size_t i = 0; i < bucketCount; ++i) {
+        if (!buckets_[i].create()) {
+            for (size_t j = 0; j < i; ++j)
+                buckets_[j].destroy();
+
+            free(buckets_);
+            return false;
+        }
+    }
 
     hash_ = hash;
     bucketCount_ = bucketCount;
@@ -37,26 +44,83 @@ void HashMap::destroy() {
     free(buckets_);
 }
 
-HashMap::Value* HashMap::Bucket::insertAfter(Node* node, const char key[],
-                                             unsigned value) {
-    assert(node);
+bool HashMap::Bucket::create() {
+    // clang-format off
+            keys_ = (Key*)aligned_alloc(defaults::MaxKeySize, sizeof(*keys_));
+            values_ = (Value*)malloc(sizeof(*values_));
+            next_ = (size_t*)malloc(sizeof(*next_));
+    // clang-format on
+    if (!next_ || !values_ || !keys_) {
+        free(next_);
+        free(values_);
+        free(keys_);
+        return false;
+    }
 
-    Node* new_node = (Node*)malloc(sizeof(*new_node));
-    if (!new_node)
-        return nullptr;
+    size_ = 0;
+    capacity_ = 1;
+    next_[0] = 0;
+    free_ = 0;
+
+    return true;
+}
+
+bool HashMap::Bucket::reserve(size_t newCapacity) {
+    if (newCapacity <= capacity_)
+        return true;
+
+    Key* newKeys = (Key*)aligned_alloc(defaults::MaxKeySize,
+                                       newCapacity * sizeof(*newKeys));
+    Value* newValues =
+        (Value*)realloc(values_, newCapacity * sizeof(*newValues));
+    size_t* newNext = (size_t*)realloc(next_, newCapacity * sizeof(*newNext));
+    if (!newKeys || !newValues || !newNext) {
+        free(newKeys);
+        free(newValues);
+        free(newNext);
+        return false;
+    }
+
+    memcpy(newKeys, keys_, capacity_ * sizeof(*keys_));
+    free(keys_);
+
+    keys_ = newKeys;
+    values_ = newValues;
+    next_ = newNext;
+
+    free_ = capacity_;
+    for (size_t i = capacity_; i < newCapacity - 1; ++i) {
+        next_[i] = i + 1;
+    }
+
+    next_[newCapacity - 1] = 0;
+    capacity_ = newCapacity;
+
+    return true;
+}
+
+HashMap::Value* HashMap::Bucket::insertAfter(size_t index, const char key[],
+                                             Value value) {
+    if (size_ == capacity_ - 1) {
+        if (!reserve(capacity_ * defaults::BucketGrowthFactor))
+            return nullptr;
+    }
 
     ++size_;
-    strncpy(new_node->key, key, defaults::MaxKeySize);
-    new_node->value = value;
-    new_node->next = node->next;
-    node->next = new_node;
-    return &new_node->value;
+    strncpy(keys_[free_], key, defaults::MaxKeySize);
+    values_[free_] = value;
+
+    size_t tmpNextFree = next_[free_];
+    next_[free_] = next_[index];
+    next_[index] = free_;
+    size_t tmpFree = free_;
+    free_ = tmpNextFree;
+
+    return values_ + tmpFree;
 }
 
 void HashMap::Bucket::destroy() {
-    for (Node* node = head(); node != tail();) {
-        Node* tmp = node->next;
-        free(node);
-        node = tmp;
-    }
+    free(keys_);
+    free(values_);
+    free(next_);
 }

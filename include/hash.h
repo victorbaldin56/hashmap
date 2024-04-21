@@ -22,6 +22,8 @@ Hash rol;
 Hash crc32;
 Hash gnu;
 
+Hash crc32_sse;
+
 }  // namespace hash
 
 #endif  // HASHMAP_HASH_H_

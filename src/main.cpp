@@ -9,10 +9,10 @@
 #include "benchmark.h"
 
 // #define HASH_STATS_MEASURE
-#define HASH_TIME_MEASURE
+// #define HASH_TIME_MEASURE
 #define LOOKUP_PERF_TEST
 
-#define VERSION "v1"
+#define VERSION "v3"
 
 #define ARRAY_SIZE(a) sizeof(a) / sizeof(a[0])
 

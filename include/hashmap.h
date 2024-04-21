@@ -15,39 +15,40 @@
 #include "config.h"
 #include "hash.h"
 
+typedef char Key[defaults::MaxKeySize];
+typedef unsigned Value;
+
 class HashMap {
-    typedef unsigned Value;
-
     class Bucket {
-        struct Node {
-            char key[defaults::MaxKeySize];
-            Value value;
-            Node* next;
-        };
+        // Cache-friendly
+        Key* keys_;
+        Value* values_;
+        size_t* next_;
+        size_t free_;
 
-        Node fakeHead_;
         size_t size_;
+        size_t capacity_;
 
        public:
-        void create() {
-            size_ = 0;
-            fakeHead_.next = &fakeHead_;
-        }
+        bool create();
 
         size_t size() const { return size_; }
-        Node* head() const { return fakeHead_.next; }
-        const Node* tail() const { return &fakeHead_; }
+        size_t capacity() const { return capacity_; }
 
-        Value* insertAfter(Node* node, const char key[], unsigned value);
+        size_t head() const { return next_[0]; }
+
+        bool reserve(size_t newCapacity);
+
+        Value* insertAfter(size_t index, const char key[], unsigned value);
 
         Value* pushFront(const char key[], unsigned value) {
-            return insertAfter(&fakeHead_, key, value);
+            return insertAfter(0, key, value);
         }
 
         Value* find(const char key[]) const {
-            for (Node* node = head(); node != tail(); node = node->next) {
-                if (strcmp(node->key, key) == 0)
-                    return &node->value;
+            for (size_t i = head(); i != 0; i = next_[i]) {
+                if (strcmp(keys_[i], key) == 0)
+                    return values_ + i;
             }
 
             return nullptr;

@@ -8,6 +8,8 @@
 
 #include <string.h>
 
+#include <immintrin.h>
+
 uint64_t hash::zero([[maybe_unused]] const char key[]) {
     return 0;
 }
@@ -70,4 +72,19 @@ uint64_t hash::gnu(const char key[]) {
     }
 
     return hash;
+}
+
+uint64_t hash::crc32_sse(const char key[]) {
+    uint64_t crc = 0;
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wcast-align"
+    // Цикл развернут вручную для гарантии
+    crc = _mm_crc32_u64(crc, *(const uint64_t*)key + 0);
+    crc = _mm_crc32_u64(crc, *(const uint64_t*)key + 1);
+    crc = _mm_crc32_u64(crc, *(const uint64_t*)key + 2);
+    crc = _mm_crc32_u64(crc, *(const uint64_t*)key + 3);
+#pragma clang diagnostic pop
+
+    return crc;
 }

@@ -25,6 +25,8 @@ const unsigned NumHashRepeats = 10;
 const unsigned NumLookupMeasures = 100;
 const unsigned NumLookupRepeats = 10;
 
+const unsigned BucketGrowthFactor = 2;
+
 }  // namespace defaults
 
 #endif  // HASHMAP_CONFIG_H_

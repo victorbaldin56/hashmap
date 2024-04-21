@@ -87,7 +87,9 @@ bool benchmarkLookup(Dict dict, const char* name) {
         auto begin = std::chrono::high_resolution_clock::now();
         for (size_t k = 0; k < defaults::NumLookupRepeats; ++k) {
             for (size_t i = 0; i < dict.capacity(); ++i) {
-                map.find(dict[i]);
+                [[maybe_unused]] unsigned* value = map.find(dict[i]);
+                // Compile in Debug to enable test
+                assert(value && "Word in dictionary not found");
             }
         }
         auto end = std::chrono::high_resolution_clock::now();
@@ -108,6 +110,7 @@ bool benchmarkLookup(Dict dict, const char* name) {
             stats::mean(times, defaults::NumLookupMeasures),
             stats::stddev(times, defaults::NumLookupMeasures));
 
+    map.destroy();
     fclose(output);
     return true;
 }

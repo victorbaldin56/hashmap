@@ -11,7 +11,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_executable(
     hashtest
     src/benchmark.cpp
-    src/bucket.cpp
     src/hashmap.cpp
     src/hash.cpp
     src/main.cpp

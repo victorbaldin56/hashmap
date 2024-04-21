@@ -47,17 +47,20 @@ bool benchmarkHash(Dict dict, Hash* hash, const char* name) {
 
     fprintf(output, "time\n");
 
-    for (unsigned i = 0; i < defaults::NumHashRepeats; ++i) {
+    for (unsigned i = 0; i < defaults::NumHashMeasures; ++i) {
         auto begin = std::chrono::high_resolution_clock::now();
-        for (size_t j = 0; j < dict.capacity(); ++j) {
-            (*hash)(dict[j]);
+        for (size_t k = 0; k < defaults::NumHashRepeats; ++k) {
+            for (size_t j = 0; j < dict.capacity(); ++j) {
+                (*hash)(dict[j]);
+            }
         }
         auto end = std::chrono::high_resolution_clock::now();
 
         fprintf(
             output, "%ld\n",
             std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin)
-                .count());
+                    .count() /
+                defaults::NumHashRepeats);
     }
 
     fclose(output);
@@ -78,19 +81,22 @@ bool benchmarkLookup(Dict dict, const char* name) {
 
     dict.toHashMap(&map);
 
-    long times[defaults::NumLookupRepeats] = {};
+    long times[defaults::NumLookupMeasures] = {};
 
-    for (unsigned j = 0; j < defaults::NumLookupRepeats; ++j) {
+    for (unsigned j = 0; j < defaults::NumLookupMeasures; ++j) {
         auto begin = std::chrono::high_resolution_clock::now();
-        for (size_t i = 0; i < dict.capacity(); ++i) {
-            map.find(dict[i]);
+        for (size_t k = 0; k < defaults::NumLookupRepeats; ++k) {
+            for (size_t i = 0; i < dict.capacity(); ++i) {
+                map.find(dict[i]);
+            }
         }
         auto end = std::chrono::high_resolution_clock::now();
         long nsec =
             std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin)
-                .count();
+                .count() /
+            defaults::NumLookupRepeats;
         times[j] = nsec;
-        if (j < defaults::NumLookupRepeats - 1)
+        if (j < defaults::NumLookupMeasures - 1)
             fprintf(output, "%ld,\n", nsec);
         else
             fprintf(output, "%ld],\n", nsec);
@@ -99,8 +105,8 @@ bool benchmarkLookup(Dict dict, const char* name) {
     fprintf(output,
             "\"avg\": %ld,\n"
             "\"stddev\": %ld}",
-            stats::mean(times, defaults::NumLookupRepeats),
-            stats::stddev(times, defaults::NumLookupRepeats));
+            stats::mean(times, defaults::NumLookupMeasures),
+            stats::stddev(times, defaults::NumLookupMeasures));
 
     fclose(output);
     return true;

@@ -23,7 +23,7 @@ bool HashMap::create(size_t bucketCount, Hash* hash) {
     return true;
 }
 
-Value* HashMap::find(const char key[]) {
+HashMap::Value* HashMap::find(const char key[]) const {
     assert(key);
 
     Bucket* bucket = buckets_ + (*hash_)(key) % bucketCount_;
@@ -35,4 +35,28 @@ void HashMap::destroy() {
         buckets_[i].destroy();
 
     free(buckets_);
+}
+
+HashMap::Value* HashMap::Bucket::insertAfter(Node* node, const char key[],
+                                             unsigned value) {
+    assert(node);
+
+    Node* new_node = (Node*)malloc(sizeof(*new_node));
+    if (!new_node)
+        return nullptr;
+
+    ++size_;
+    strncpy(new_node->key, key, defaults::MaxKeySize);
+    new_node->value = value;
+    new_node->next = node->next;
+    node->next = new_node;
+    return &new_node->value;
+}
+
+void HashMap::Bucket::destroy() {
+    for (Node* node = head(); node != tail();) {
+        Node* tmp = node->next;
+        free(node);
+        node = tmp;
+    }
 }

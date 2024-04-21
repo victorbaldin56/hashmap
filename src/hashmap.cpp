@@ -8,9 +8,7 @@
 
 #include <assert.h>
 
-bool HashMap::create(size_t bucketCount, Hash* hash) {
-    assert(hash);
-
+bool HashMap::create(size_t bucketCount) {
     buckets_ = (Bucket*)malloc(bucketCount * sizeof(*buckets_));
     if (!buckets_)
         return false;
@@ -25,15 +23,14 @@ bool HashMap::create(size_t bucketCount, Hash* hash) {
         }
     }
 
-    hash_ = hash;
     bucketCount_ = bucketCount;
     return true;
 }
 
-Value* HashMap::find(const char key[]) const {
+Value* HashMap::find(const Key* key) const {
     assert(key);
 
-    Bucket* bucket = buckets_ + (*hash_)(key) % bucketCount_;
+    Bucket* bucket = buckets_ + hash::crc32_sse(key) % bucketCount_;
     return bucket->find(key);
 }
 
@@ -46,9 +43,9 @@ void HashMap::destroy() {
 
 bool HashMap::Bucket::create() {
     // clang-format off
-            keys_ = (Key*)aligned_alloc(defaults::MaxKeySize, sizeof(*keys_));
-            values_ = (Value*)malloc(sizeof(*values_));
-            next_ = (size_t*)malloc(sizeof(*next_));
+    keys_ = (Key*)aligned_alloc(defaults::MaxKeySize, sizeof(*keys_));
+    values_ = (Value*)malloc(sizeof(*values_));
+    next_ = (size_t*)malloc(sizeof(*next_));
     // clang-format on
     if (!next_ || !values_ || !keys_) {
         free(next_);
@@ -99,15 +96,14 @@ bool HashMap::Bucket::reserve(size_t newCapacity) {
     return true;
 }
 
-Value* HashMap::Bucket::insertAfter(size_t index, const char key[],
-                                    Value value) {
+Value* HashMap::Bucket::insertAfter(size_t index, const Key* key, Value value) {
     if (size_ == capacity_ - 1) {
         if (!reserve(capacity_ * defaults::BucketGrowthFactor))
             return nullptr;
     }
 
     ++size_;
-    strncpy(keys_[free_], key, defaults::MaxKeySize);
+    strncpy((char*)(keys_ + free_), (const char*)key, defaults::MaxKeySize);
     values_[free_] = value;
 
     size_t tmpNextFree = next_[free_];

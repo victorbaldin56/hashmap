@@ -40,7 +40,7 @@ bool Dict::loadFromFile(const char* filename) {
     size_t cnt = countLines(buf_.data);
 
     // For alignment optimizations in future.
-    keys_ = (char(*)[defaults::MaxKeySize])malloc(cnt * defaults::MaxKeySize);
+    keys_ = (Key*)aligned_alloc(sizeof(*keys_), cnt * sizeof(*keys_));
     if (!keys_) {
         fprintf(stderr, "Failed to allocate memory\n");
         return false;
@@ -54,7 +54,7 @@ bool Dict::loadFromFile(const char* filename) {
         if (!tmp)
             break;
         *tmp = '\0';
-        strncpy(keys_[i], key, defaults::MaxKeySize);
+        strncpy((char*)(keys_ + i), key, defaults::MaxKeySize);
         key = tmp;
         ++key;
     }
@@ -68,7 +68,7 @@ bool Dict::toHashMap(HashMap* map) {
     for (size_t i = 0; i < capacity_; ++i) {
         DEBUG_LOG("%s: ", keys_[i]);
 
-        HashMap::InsertResult res = map->insert(keys_[i], 1);
+        HashMap::InsertResult res = map->insert(keys_ + i, 1);
         if (!res.isInserted) {
             if (!res.valptr) {
                 fprintf(stderr, "Failed to allocate node in bucket\n");

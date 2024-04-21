@@ -9,15 +9,16 @@
 #include "benchmark.h"
 
 // #define HASH_STATS_MEASURE
-#define HASH_TIME_MEASURE
+// #define HASH_TIME_MEASURE
 #define LOOKUP_PERF_TEST
 
-#define VERSION "v3"
+#define VERSION "v4"
 
 #define ARRAY_SIZE(a) sizeof(a) / sizeof(a[0])
 
 static const char DictFile[] = "data/dictionary.txt";
 
+#if 0
 inline void getAllStats(Dict dict) {
     GET_HASH_STATS(dict, hash::zero);
     GET_HASH_STATS(dict, hash::firstChar);
@@ -40,6 +41,7 @@ inline void benchmarkAllHash(Dict dict) {
     // BENCHMARK_HASH(dict, hash::gnu);
     BENCHMARK_HASH(dict, hash::crc32_sse);
 }
+#endif
 
 int main() {
     Dict dict;

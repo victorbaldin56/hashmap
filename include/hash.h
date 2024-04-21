@@ -9,20 +9,20 @@
 
 #include <stdint.h>
 
-typedef uint64_t Hash(const char key[]);
-
+#include <immintrin.h>
 namespace hash {
 
-Hash zero;
-Hash strlen;
-Hash firstChar;
-Hash sum;
-Hash ror;
-Hash rol;
-Hash crc32;
-Hash gnu;
+inline uint64_t crc32_sse(const __m256* key) {
+    uint64_t crc = 0;
 
-Hash crc32_sse;
+    // Цикл развернут вручную для гарантии
+    crc = _mm_crc32_u64(crc, *(const uint64_t*)key + 0);
+    crc = _mm_crc32_u64(crc, *(const uint64_t*)key + 1);
+    crc = _mm_crc32_u64(crc, *(const uint64_t*)key + 2);
+    crc = _mm_crc32_u64(crc, *(const uint64_t*)key + 3);
+
+    return crc;
+}
 
 }  // namespace hash
 

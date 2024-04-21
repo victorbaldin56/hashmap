@@ -15,7 +15,7 @@
 #include "config.h"
 #include "hash.h"
 
-typedef char Key[defaults::MaxKeySize];
+typedef __m256 Key;
 typedef unsigned Value;
 
 class HashMap {
@@ -39,15 +39,15 @@ class HashMap {
 
         bool reserve(size_t newCapacity);
 
-        Value* insertAfter(size_t index, const char key[], unsigned value);
+        Value* insertAfter(size_t index, const __m256* key, unsigned value);
 
-        Value* pushFront(const char key[], unsigned value) {
+        Value* pushFront(const Key* key, unsigned value) {
             return insertAfter(0, key, value);
         }
 
-        Value* find(const char key[]) const {
+        Value* find(const Key* key) const {
             for (size_t i = head(); i != 0; i = next_[i]) {
-                if (strcmp(keys_[i], key) == 0)
+                if (strcmp((const char*)(keys_ + i), (const char*)key) == 0)
                     return values_ + i;
             }
 
@@ -59,7 +59,6 @@ class HashMap {
 
     size_t bucketCount_;
     Bucket* buckets_;
-    Hash* hash_;
 
    public:
     struct InsertResult {
@@ -67,12 +66,12 @@ class HashMap {
         Value* valptr;
     };
 
-    bool create(size_t bucketCount, Hash* hash);
+    bool create(size_t bucketCount);
     size_t bucketCount() const { return bucketCount_; }
     size_t bucketSize(size_t i) const { return buckets_[i].size(); }
 
-    InsertResult insert(const char key[], Value value) {
-        Bucket* bucket = buckets_ + (*hash_)(key) % bucketCount_;
+    InsertResult insert(const Key* key, Value value) {
+        Bucket* bucket = buckets_ + hash::crc32_sse(key) % bucketCount_;
         Value* valptr = bucket->find(key);
         if (valptr)
             return {false, valptr};
@@ -84,7 +83,7 @@ class HashMap {
         return {true, valptr};
     };
 
-    Value* find(const char key[]) const;
+    Value* find(const Key* key) const;
     void destroy();
 };
 

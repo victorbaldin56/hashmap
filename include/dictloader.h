@@ -20,7 +20,7 @@ struct FileBuffer {
 
 class Dict {
     FileBuffer buf_;
-    char (*keys_)[defaults::MaxKeySize];
+    Key* keys_;
     size_t capacity_;
 
    public:
@@ -28,7 +28,7 @@ class Dict {
     bool toHashMap(HashMap* map);
 
     size_t capacity() const { return capacity_; }
-    char* operator[](size_t i) const { return keys_[i]; }
+    Key* operator[](size_t i) const { return keys_ + i; }
 
     void destroy() {
         munmap(buf_.data, buf_.size);

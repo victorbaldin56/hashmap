@@ -17,6 +17,7 @@
 #define BENCHMARK_HASH(dict, hash)                                             \
     benchmarkHash(dict, hash, STATS_DIR #hash "_time.csv")
 
+#if 0
 /** @brief Prints stats in CSV format.
  *
  *  @param dict Test dictionary.
@@ -28,6 +29,8 @@
 bool getHashStats(Dict dict, size_t bucketCount, Hash* hash, const char* name);
 
 bool benchmarkHash(Dict dict, Hash* hash, const char* name);
+#endif
+
 bool benchmarkLookup(Dict dict, const char* name);
 
 #endif  // HASHMAP_BENCHMARK_H_

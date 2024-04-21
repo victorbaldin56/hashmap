@@ -13,6 +13,7 @@
 
 #include "stats.h"
 
+#if 0
 bool getHashStats(Dict dict, size_t bucketCount, Hash* hash, const char* name) {
     assert(hash);
 
@@ -66,6 +67,7 @@ bool benchmarkHash(Dict dict, Hash* hash, const char* name) {
     fclose(output);
     return true;
 }
+#endif
 
 bool benchmarkLookup(Dict dict, const char* name) {
     FILE* output = fopen(name, "w");
@@ -77,7 +79,7 @@ bool benchmarkLookup(Dict dict, const char* name) {
     fprintf(output, "{\"time\": [\n");
 
     HashMap map;
-    map.create(defaults::UpperBucketCount, hash::crc32_sse);
+    map.create(defaults::UpperBucketCount);
 
     dict.toHashMap(&map);
 

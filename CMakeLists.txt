@@ -12,7 +12,6 @@ add_executable(
     hashtest
     src/benchmark.cpp
     src/hashmap.cpp
-    src/hash.cpp
     src/main.cpp
     src/dictloader.cpp
     src/stats.cpp

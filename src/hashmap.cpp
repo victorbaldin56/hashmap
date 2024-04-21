@@ -30,7 +30,7 @@ bool HashMap::create(size_t bucketCount, Hash* hash) {
     return true;
 }
 
-HashMap::Value* HashMap::find(const char key[]) const {
+Value* HashMap::find(const char key[]) const {
     assert(key);
 
     Bucket* bucket = buckets_ + (*hash_)(key) % bucketCount_;
@@ -99,8 +99,8 @@ bool HashMap::Bucket::reserve(size_t newCapacity) {
     return true;
 }
 
-HashMap::Value* HashMap::Bucket::insertAfter(size_t index, const char key[],
-                                             Value value) {
+Value* HashMap::Bucket::insertAfter(size_t index, const char key[],
+                                    Value value) {
     if (size_ == capacity_ - 1) {
         if (!reserve(capacity_ * defaults::BucketGrowthFactor))
             return nullptr;

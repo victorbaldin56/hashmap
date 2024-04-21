@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION=v2
+VERSION=v3
 BUILD_DIR=RelWithDebInfo
 TARGET_EXEC=$BUILD_DIR/hashtest
 PERF_DIR=stats/lookup

@@ -1,5 +1,5 @@
 #!/bin/bash
 
 sudo cpupower frequency-set -g performance
-RelWithDebInfo/hashtest
+sudo RelWithDebInfo/hashtest
 sensors # get CPU temperature

@@ -9,7 +9,7 @@
 #include "benchmark.h"
 
 // #define HASH_STATS_MEASURE
-// #define HASH_TIME_MEASURE
+#define HASH_TIME_MEASURE
 #define LOOKUP_PERF_TEST
 
 #define VERSION "v3"
@@ -34,10 +34,11 @@ inline void getAllStats(Dict dict) {
 }
 
 inline void benchmarkAllHash(Dict dict) {
-    BENCHMARK_HASH(dict, hash::ror);
-    BENCHMARK_HASH(dict, hash::rol);
-    BENCHMARK_HASH(dict, hash::crc32);
-    BENCHMARK_HASH(dict, hash::gnu);
+    // BENCHMARK_HASH(dict, hash::ror);
+    // BENCHMARK_HASH(dict, hash::rol);
+    // BENCHMARK_HASH(dict, hash::crc32);
+    // BENCHMARK_HASH(dict, hash::gnu);
+    BENCHMARK_HASH(dict, hash::crc32_sse);
 }
 
 int main() {

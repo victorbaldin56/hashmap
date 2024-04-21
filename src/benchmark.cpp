@@ -77,7 +77,7 @@ bool benchmarkLookup(Dict dict, const char* name) {
     fprintf(output, "{\"time\": [\n");
 
     HashMap map;
-    map.create(defaults::UpperBucketCount, hash::crc32);
+    map.create(defaults::UpperBucketCount, hash::crc32_sse);
 
     dict.toHashMap(&map);
 

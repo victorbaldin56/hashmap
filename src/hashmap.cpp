@@ -42,11 +42,9 @@ void HashMap::destroy() {
 }
 
 bool HashMap::Bucket::create() {
-    // clang-format off
     keys_ = (Key*)aligned_alloc(defaults::MaxKeySize, sizeof(*keys_));
     values_ = (Value*)malloc(sizeof(*values_));
     next_ = (size_t*)malloc(sizeof(*next_));
-    // clang-format on
     if (!next_ || !values_ || !keys_) {
         free(next_);
         free(values_);

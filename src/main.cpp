@@ -12,7 +12,7 @@
 // #define HASH_TIME_MEASURE
 #define LOOKUP_PERF_TEST
 
-#define VERSION "v4"
+#define VERSION "v5"
 
 #define ARRAY_SIZE(a) sizeof(a) / sizeof(a[0])
 

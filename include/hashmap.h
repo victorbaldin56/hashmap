@@ -18,7 +18,22 @@
 typedef __m256 Key;
 typedef unsigned Value;
 
-extern "C" int strcmp_aligned32_noinline(const Key* str1, const Key* str2);
+// extern "C" int strcmp_aligned32_noinline(const Key* str1, const Key* str2);
+
+inline int strcmp_aligned32(const Key* str1, const Key* str2) {
+    int res;
+
+    __asm__(".intel_syntax noprefix\n"
+            "vmovdqa ymm0, YMMWORD PTR [%V1]\n"
+            "xor rax, rax\n"
+            "vptest ymm0, YMMWORD PTR [%V2]\n"
+            "seta al\n"
+            : "=a"(res)
+            : "r"(str1), "r"(str2)
+            : "ymm0", "cc");
+
+    return res;
+}
 
 class HashMap {
     class Bucket {
@@ -49,7 +64,7 @@ class HashMap {
 
         Value* find(const Key* key) const {
             for (size_t i = head(); i != 0; i = next_[i]) {
-                if (strcmp_aligned32_noinline((keys_ + i), key) == 0)
+                if (strcmp_aligned32((keys_ + i), key) == 0)
                     return values_ + i;
             }
 

@@ -10,9 +10,11 @@
 #include <stdint.h>
 
 #include <immintrin.h>
+
+typedef __m256 Key;
 namespace hash {
 
-inline uint64_t crc32_sse(const __m256* key) {
+inline uint64_t crc32_sse(const Key* key) {
     uint64_t crc = 0;
 
     // Цикл развернут вручную для гарантии

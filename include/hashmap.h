@@ -15,7 +15,6 @@
 #include "config.h"
 #include "hash.h"
 
-typedef __m256 Key;
 typedef unsigned Value;
 
 // extern "C" int strcmp_aligned32_noinline(const Key* str1, const Key* str2);
@@ -56,9 +55,9 @@ class HashMap {
 
         bool reserve(size_t newCapacity);
 
-        Value* insertAfter(size_t index, const __m256* key, unsigned value);
+        Value* insertAfter(size_t index, const Key* key, Value value);
 
-        Value* pushFront(const Key* key, unsigned value) {
+        Value* pushFront(const Key* key, Value value) {
             return insertAfter(0, key, value);
         }
 

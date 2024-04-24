@@ -22,10 +22,15 @@ const unsigned NumHashMeasures = 100;
 const unsigned NumHashRepeats = 10;
 
 // For lookup time measurements
-const unsigned NumLookupMeasures = 100;
-const unsigned NumLookupRepeats = 10;
+const unsigned NumLookupMeasures = 5;
+const unsigned NumLookupRepeats = 50;
 
 const unsigned BucketGrowthFactor = 2;
+
+const size_t HashMapSizes[] = {13, 23, 41, 67,
+                               101, 157, 251, 401, 643, 1021, 1637, 2741,
+                               4211, 6659, 10723, 17167, 27427, 43889, 68899,
+                               100003};
 
 }  // namespace defaults
 

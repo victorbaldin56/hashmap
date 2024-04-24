@@ -13,6 +13,10 @@
 
 #include "stats.h"
 
+#define ARRAY_SIZE(x) sizeof(x) / sizeof(x[0])
+
+static void benchmarkLookupOnSize(Dict dict, size_t bucketCount, FILE* output);
+
 #if 0
 bool getHashStats(Dict dict, size_t bucketCount, Hash* hash, const char* name) {
     assert(hash);
@@ -115,4 +119,54 @@ bool benchmarkLookup(Dict dict, const char* name) {
     map.destroy();
     fclose(output);
     return true;
+}
+
+bool benchmarkLookupOnAllSizes(Dict dict, const char* name) {
+    FILE* output = fopen(name, "w");
+    if (!output) {
+        fprintf(stderr, "Failed to open file %s: %s\n", name, strerror(errno));
+        return false;
+    }
+
+    fprintf(output, "size,time,stddev\n");
+
+    for (unsigned i = 0; i < ARRAY_SIZE(defaults::HashMapSizes); ++i)
+        benchmarkLookupOnSize(dict, defaults::HashMapSizes[i], output);
+
+    fclose(output);
+    return true;
+}
+
+static void benchmarkLookupOnSize(Dict dict, size_t bucketCount,
+                                  FILE* output) {
+    assert(output);
+
+    HashMap map;
+    map.create(bucketCount);
+    dict.toHashMap(&map);
+
+    long times[defaults::NumLookupMeasures] = {};
+
+    for (unsigned j = 0; j < defaults::NumLookupMeasures; ++j) {
+        auto begin = std::chrono::high_resolution_clock::now();
+        for (size_t k = 0; k < defaults::NumLookupRepeats; ++k) {
+            for (size_t i = 0; i < dict.capacity(); ++i) {
+                [[maybe_unused]] unsigned* value = map.find(dict[i]);
+                // Compile in Debug to enable test
+                assert(value && "Word in dictionary not found");
+            }
+        }
+        auto end = std::chrono::high_resolution_clock::now();
+        long nsec =
+            std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin)
+                .count() /
+            defaults::NumLookupRepeats;
+        times[j] = nsec;
+    }
+
+    fprintf(output, "%zu,%ld,%ld\n", bucketCount,
+            stats::mean(times, defaults::NumLookupMeasures),
+            stats::stddev(times, defaults::NumLookupMeasures));
+
+    map.destroy();
 }

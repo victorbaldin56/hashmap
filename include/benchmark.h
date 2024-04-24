@@ -32,5 +32,6 @@ bool benchmarkHash(Dict dict, Hash* hash, const char* name);
 #endif
 
 bool benchmarkLookup(Dict dict, const char* name);
+bool benchmarkLookupOnAllSizes(Dict dict, const char* name);
 
 #endif  // HASHMAP_BENCHMARK_H_

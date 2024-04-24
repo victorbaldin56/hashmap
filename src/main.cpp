@@ -10,7 +10,8 @@
 
 // #define HASH_STATS_MEASURE
 // #define HASH_TIME_MEASURE
-#define LOOKUP_PERF_TEST
+// #define LOOKUP_PERF_TEST
+#define LOOKUP_ALL_SIZES_TEST
 
 #define VERSION "v6"
 
@@ -58,6 +59,10 @@ int main() {
 
 #if (defined(LOOKUP_PERF_TEST))
     benchmarkLookup(dict, LOOKUP_STATS_DIR VERSION ".json");
+#endif
+
+#if (defined(LOOKUP_ALL_SIZES_TEST))
+    benchmarkLookupOnAllSizes(dict, LOOKUP_STATS_DIR "size_test.csv");
 #endif
 
     dict.destroy();

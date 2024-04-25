@@ -536,6 +536,48 @@ inline int strcmp_aligned32(const Key* str1, const Key* str2) {
 
 ![image](screenshots/flamegraph_final.png)
 
+**_ЗАМЕЧАНИЕ:_** функция `strcmp()` в стандартной библиотеке
+на самом деле тоже может использовать векторизацию при сравнении.
+Это можно обнаружить, изучив, к примеру, исходный код
+имплементации данной функции в стандартной библиотеке GNU libc:
+<details>
+<summary>Код</summary>
+
+```cpp
+/* Compare S1 and S2, returning less than, equal to or
+   greater than zero if S1 is lexicographically less than,
+   equal to or greater than S2.  */
+int
+strcmp (const char *p1, const char *p2)
+{
+  /* Handle the unaligned bytes of p1 first.  */
+  uintptr_t n = -(uintptr_t)p1 % sizeof(op_t);
+  for (int i = 0; i < n; ++i)
+    {
+      unsigned char c1 = *p1++;
+      unsigned char c2 = *p2++;
+      int diff = c1 - c2;
+      if (c1 == '\0' || diff != 0)
+	return diff;
+    }
+
+  /* P1 is now aligned to op_t.  P2 may or may not be.  */
+  const op_t *x1 = (const op_t *) p1;
+  op_t w1 = *x1++;
+  uintptr_t ofs = (uintptr_t) p2 % sizeof(op_t);
+  return ofs == 0
+    ? strcmp_aligned_loop (x1, (const op_t *)p2, w1)
+    : strcmp_unaligned_loop (x1, (const op_t *)(p2 - ofs), w1, ofs);
+}
+```
+</details>
+
+Весь код доступен на [зеркале](https://github.com/bminor/glibc)
+репозитория glibc, но уже по приведенному примеру можно видеть,
+что функция побайтово обрабатывает лишь невыровненное начало
+строки, а затем уже цикл идет блоками. Мы избежали данного
+алгоритма, введя требование на выравнивание и длину ключа.
+
 Мы уже сделали ассемблерные оптимизации 3 способами: через intrinsics,
 в отдельном файле и вставками. Оставшиеся функции не поддаются локальным
 оптимизациям, поэтому перейдем с этим типом оптимизаций мы закончим.

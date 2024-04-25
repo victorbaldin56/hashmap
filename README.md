@@ -229,8 +229,8 @@ uint64_t hash::gnu(const char key[]) {
 |       Хеш       | Стандартное отклонение |  Время, мс   |
 | :-------------: | :--------------------: | :----------: |
 |   hash::zero    |          288           |      --      |
-| hash::firstChar |           70           |      --      |
 |  hash::strlen   |           99           |      --      |
+| hash::firstChar |           70           |      --      |
 |    hash::sum    |           12           |      --      |
 |    hash::ror    |          4.4           | 4.70 ± 0.09  |
 |    hash::rol    |          3.2           | 4.65 ± 0.05  |
